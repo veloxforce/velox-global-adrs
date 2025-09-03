@@ -82,5 +82,4 @@ csvcut -c clientName,amount,quantity,rate,status,"headerCustomFields.Invoice Per
 
 ---
 
-*Last Updated: 2025-09-03*  
-*Next Review: After Q4 2025 analysis*
+*Last Updated: 2025-09-03*
