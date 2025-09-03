@@ -5,7 +5,7 @@ description: "Centralized ADR hosting via MCP protocol enabling universal AI age
 # Use MCP Protocol for ADR Distribution
 
 ## Status
-**Accepted** | Date: 2025-01-03
+**Proposed** | Date: 2025-09-03
 
 ## Context
 - AI agents across multiple projects need access to organizational architectural decisions
