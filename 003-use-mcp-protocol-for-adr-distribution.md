@@ -14,6 +14,7 @@ description: "Centralized ADR hosting via MCP protocol enabling universal AI age
 - Knowledge sharing across projects is hampered by ADR isolation in individual repositories
 - AI-assisted development is becoming standard but lacks access to organizational wisdom
 - Need to distribute architectural knowledge to any team or project on-demand
+- Being able to connect any MCP client to data globally distributed.
 
 ## Decision
 We will expose ADRs as MCP (Model Context Protocol) resources hosted on a remote server, enabling any MCP client to connect and consume architectural knowledge without filesystem dependencies.
@@ -41,7 +42,6 @@ AI Agent with Architectural Context
 - **Selective Distribution** - Share ADRs with specific teams/projects by sharing server connection details
 - **Zero Local Setup** - No git cloning, no filesystem access, no local maintenance for consumers
 - **Protocol Standardization** - Works with any MCP-compatible AI tool (Claude Code, ChatGPT, custom clients)
-- **Version Control** - ADRs maintain git history showing decision evolution and context over time
 
 ### ❌ Negative
 - **Infrastructure Dependency** - Requires maintaining remote server infrastructure
