@@ -10,6 +10,15 @@
       "priority": 0.9,
       "audience": ["assistant"],
       "tags": ["engineering", "principles", "systems"]
+    },
+    {
+      "path": "/002-adopt-fastmcp-for-mcp-server-needs.md",
+      "name": "Adopt FastMCP for MCP Server Needs",
+      "description": "Standard framework choice for creating MCP servers with minimal boilerplate",
+      "mimeType": "text/markdown",
+      "priority": 0.8,
+      "audience": ["assistant"],
+      "tags": ["mcp", "framework", "tooling", "servers"]
     }
   ],
   "metadata": {
