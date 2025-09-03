@@ -1,0 +1,20 @@
+{
+  "version": "1.0",
+  "baseUri": "git://velox-global-adrs",
+  "resources": [
+    {
+      "path": "/001-adopt-universal-plant-engineering.md",
+      "name": "Universal Plant Engineering Principle",
+      "description": "Core engineering principle for organic system growth and adaptation",
+      "mimeType": "text/markdown",
+      "priority": 0.9,
+      "audience": ["assistant"],
+      "tags": ["engineering", "principles", "systems"]
+    }
+  ],
+  "metadata": {
+    "repository": "veloxforce/velox-global-adrs",
+    "purpose": "Global architectural decisions as MCP resources",
+    "updated": "2025-09-03"
+  }
+}
