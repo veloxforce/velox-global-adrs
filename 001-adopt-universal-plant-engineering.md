@@ -1,8 +1,5 @@
 ---
-mcp:
-  priority: 0.9
-  audience: ["assistant"]
-  tags: ["engineering", "principles", "systems"]
+description: "Core engineering principle for organic system growth and adaptation"
 ---
 
 # ADR-001: Adopt Universal Plant Engineering Principle

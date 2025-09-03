@@ -1,8 +1,5 @@
 ---
-mcp:
-  priority: 0.8
-  audience: ["assistant"]
-  tags: ["mcp", "framework", "tooling", "servers"]
+description: "Standard framework choice for creating MCP servers with minimal boilerplate"
 ---
 
 # 002: adopt fastmcp for mcp server needs
