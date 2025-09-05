@@ -1,18 +1,69 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file helps Claude Code navigate the ADR repository structure.
 
-## Repository Purpose
+## 🧭 Navigation Strategy
+**Philosophy**: Point to the right ADR for the right context. Never duplicate content.
 
-This repository stores **global Architecture Decision Records (ADRs)** that become **MCP Resources** - discoverable knowledge for AI agents across organizational projects. Think of it as an architectural brain accessible to AI via the MCP protocol.
+---
 
-## ADR Format & Structure
+## 📚 Documentation Types
 
-### File Naming
-- Sequential numbering: `001-descriptive-title.md`, `002-next-decision.md`
-- Use hyphens, keep titles concise but descriptive
+**🔵 Project ADRs**: How this MCP server system works
+- Located in `/ADR/` folder
+- Defines architecture, backend, and discovery mechanisms
+- Read these to understand how this repository serves ADRs to AI agents
 
-### Required Structure
+**🟢 Global Content ADRs**: Organizational knowledge served to AI agents
+- Located in repository root
+- Engineering principles and architectural patterns  
+- These are the actual content distributed via MCP servers
+
+---
+
+## 🛠️ System Architecture
+
+**How this repository works as MCP backend:**
+- **MCP Framework Choice** → `ADR/002-adopt-fastmcp-for-mcp-server-needs.md`
+- **Distribution Model** → `ADR/003-use-mcp-protocol-for-adr-distribution.md`
+- **Backend Architecture** → `ADR/004-use-github-as-stateless-adr-backend.md`
+- **Discovery Mechanism** → `ADR/005-use-dynamic-discovery-for-adr-listings.md`
+
+**Key Insight**: This repository serves as content backend for MCP servers, not for direct consumption.
+
+---
+
+## 📂 Repository Structure
+
+```
+/
+├── ADR/                → Project-specific decisions (how this system works)
+├── *.md (root level)   → Global content ADRs (what gets served to AI agents)
+└── docs/work-log/      → Historical implementation context
+```
+
+**Current Global Content ADRs:**
+- `001-adopt-universal-plant-engineering.md` - Core engineering principles
+- `005-use-hierarchical-field-selection-for-business-intelligence.md` - BI patterns
+- `006-use-manual-data-extraction-with-period-aligned-analysis.md` - Analysis methods
+- `008-distinguish-workflows-protocols-agents-in-ai-systems.md` - AI system design
+- `caddy-confd-pattern-container-web-access.md` - Infrastructure patterns
+
+---
+
+## ➕ Adding New ADRs
+
+**Global Content ADRs** (organizational knowledge):
+1. Add to root: `NNN-descriptive-title.md`
+2. Include YAML frontmatter with description
+3. Push to GitHub - automatically discovered by MCP servers
+
+**Project ADRs** (about this system):
+1. Add to `/ADR/`: `NNN-title.md`  
+2. Document decisions about MCP server operation
+3. Update this router if navigation needs change
+
+**ADR Structure:**
 ```markdown
 ---
 description: "Brief description for MCP metadata"
@@ -23,57 +74,14 @@ description: "Brief description for MCP metadata"
 ## Status
 [Proposed|Accepted|Deprecated|Superseded]
 
-## Context
-[Why this decision is needed]
-
-## Decision
-[What we decided to do]
-
-## Consequences
-[Positive and negative outcomes]
+## Context, Decision, Consequences...
 ```
 
-## MCP Resource System
-
-### Resource Registration
-ADRs are automatically exposed via MCP through `.mcp/resources.json` which maps ADRs to discoverable resources with:
-- URI scheme: `git://velox-global-adrs/NNN-title.md`
-- Priority levels (0.0-1.0)
-- Audience tags (typically `["assistant"]`)
-- Searchable tags
-
-### Resource Metadata
-Include YAML frontmatter in ADRs for MCP discovery:
-```yaml
 ---
-description: "Brief description for resource catalogs"
-mcp:
-  priority: 0.8
-  audience: ["assistant"] 
-  tags: ["relevant", "keywords"]
----
-```
 
-## Common Workflows
+## 🔄 For Future Claude Instances
 
-### Adding New ADRs
-1. Find next sequential number by checking existing files
-2. Create `NNN-descriptive-title.md` following ADR structure
-3. Include MCP metadata in frontmatter
-4. Update `.mcp/resources.json` if implementing MCP server
-5. Commit with clear message describing the architectural decision
-
-### Git Workflow
-- This is version-controlled wisdom - commit history shows decision evolution
-- Standard Git workflow: branch, commit, push, PR if collaborative
-- Keep commits focused on single decisions
-
-## Architecture Notes
-
-- **Read-only knowledge base**: AI agents consume this as context, don't modify during tasks
-- **Cross-project patterns**: Decisions here transcend individual codebases
-- **MCP Integration**: Designed for AI discovery via Model Context Protocol
-- **Version control**: Git provides decision history and ensures current state
-
-## Key Principles from ADR-001
-The repository follows "Universal Plant Engineering" - organic growth based on actual needs rather than predicted requirements. ADRs should emerge from real architectural decisions, not theoretical planning.
+- This repository serves as MCP server content backend
+- ADRs are fetched dynamically from GitHub (no local storage)  
+- The system is stateless - everything flows from GitHub
+- Never duplicate ADR content - always point to source files

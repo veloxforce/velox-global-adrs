@@ -1,69 +1,85 @@
 # Velox Global ADRs
 
-**Architecture Decision Records for AI-accessible organizational knowledge.**
+**Architecture Decision Records served via MCP protocol for AI agent consumption.**
 
 ## What This Is
 
-This repository stores **global architectural patterns** that transcend individual projects - Git workflows, infrastructure patterns, engineering principles. These ADRs become **MCP Resources** that any AI agent can discover and consume as context.
+This repository serves as the **content backend** for MCP servers that distribute organizational architectural knowledge to AI agents. It contains global patterns, engineering principles, and infrastructure decisions that transcend individual projects.
 
-Think of it as your organization's architectural brain, accessible to AI.
-
-## Why Here
-
-Traditional ADR storage creates **context fragmentation** - knowledge trapped in project silos or Google Drive folders. MCP Resources solve this by making knowledge **discoverable and contextual**.
-
-Benefits:
-- ✅ **One source of truth** for cross-project patterns  
-- ✅ **Version-controlled wisdom** with Git history
-- ✅ **AI-discoverable context** via MCP protocol
-- ✅ **Zero duplication** across projects
-
-## The Pattern
-
-### 1. Write ADR
+**Architecture Flow:**
 ```
-NNN-decision-title.md
+GitHub Repository (Source of Truth)
+    ↓ (GitHub API + raw URLs)
+FastMCP Server (Stateless)
+    ↓ (MCP Protocol) 
+Any MCP Client (Claude, ChatGPT, etc.)
+    ↓
+AI Agent with ADR Context
 ```
 
-### 2. Add Resource Metadata  
-```yaml
----
-mcp:
-  priority: 0.8
-  audience: ["assistant"] 
-  tags: ["git", "workflow"]
----
+## System Architecture
+
+This repository implements a **stateless MCP distribution system**:
+
+- **Dynamic Discovery**: ADRs auto-discovered via GitHub API ([ADR-005](ADR/005-use-dynamic-discovery-for-adr-listings.md))
+- **Stateless Backend**: Direct GitHub fetching, no local storage ([ADR-004](ADR/004-use-github-as-stateless-adr-backend.md))
+- **MCP Distribution**: Remote server access for universal AI consumption ([ADR-003](ADR/003-use-mcp-protocol-for-adr-distribution.md))
+- **FastMCP Framework**: Standardized server implementation ([ADR-002](ADR/002-adopt-fastmcp-for-mcp-server-needs.md))
+
+## Repository Structure
+
+```
+/
+├── ADR/                → Project decisions (how this system works)
+├── *.md (root level)   → Global content ADRs (served to AI agents)
+└── docs/work-log/      → Implementation history
 ```
 
-### 3. Commit & Push
-Git handles versioning. MCP server exposes as resources.
+**Global Content ADRs** (the knowledge served to AI):
+- Engineering principles and patterns
+- Infrastructure decisions  
+- Cross-project architectural guidance
 
-### 4. AI Consumes
-Any AI agent can discover and use via:
-```
-git://velox-global-adrs/NNN-decision-title.md
-```
-
-## URI Scheme
-
-Resources follow predictable patterns:
-- Engineering principles: `git://velox-global-adrs/001-adopt-universal-plant-engineering.md`
-- Infrastructure patterns: `git://velox-global-adrs/002-infrastructure-as-urls.md`
-- Development workflows: `git://velox-global-adrs/003-worktree-based-development.md`
+**Project ADRs** (in `/ADR/` folder):
+- How this MCP distribution system operates
+- Technical implementation decisions for the backend
 
 ## For AI Agents
 
-This repository provides **read-only architectural context**. When you need organizational patterns or established decisions, these ADRs contain the institutional knowledge to inform your implementations.
+This repository provides **networked architectural context** via MCP servers. ADRs are fetched on-demand from GitHub and served through the MCP protocol - no direct file access required.
 
-The knowledge is **version-controlled** and **always current**.
+Benefits:
+- ✅ **Universal Access** - Connect once, access everywhere
+- ✅ **Always Current** - Direct GitHub fetching ensures latest content  
+- ✅ **Zero Local Setup** - No cloning, no filesystem dependencies
+- ✅ **Version Controlled** - Full Git history and collaboration features
 
 ## Adding New ADRs
 
-1. Use next sequential number: `NNN-descriptive-title.md`
-2. Include MCP metadata in YAML frontmatter
-3. Follow standard ADR format (Status, Context, Decision, Consequences)
-4. Commit with clear message describing the architectural decision
+### Global Content ADRs (Organizational Knowledge)
+1. Create in root: `NNN-descriptive-title.md`
+2. Include YAML frontmatter with description:
+   ```yaml
+   ---
+   description: "Brief description for MCP discovery"
+   ---
+   ```
+3. Follow ADR format: Status, Context, Decision, Consequences
+4. Commit and push - **automatically discovered** by MCP servers
+
+### Project ADRs (About This System)
+1. Create in `/ADR/`: `NNN-title.md`
+2. Document decisions about MCP server operation
+3. Update [CLAUDE.md](CLAUDE.md) navigation if needed
+
+## Implementation
+
+MCP servers implementing this backend:
+- Fetch ADR lists via GitHub API
+- Parse YAML frontmatter for metadata
+- Serve content via raw.githubusercontent.com
+- Enable AI agents to discover and consume architectural wisdom
 
 ---
 
-*Architecture decisions as discoverable resources, not buried documentation.*
+*Architecture decisions as networked resources, accessible to any AI agent via MCP protocol.*
