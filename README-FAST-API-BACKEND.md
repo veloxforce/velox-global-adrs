@@ -1,3 +1,7 @@
+---
+description: "Comprehensive FastAPI + Supabase backend architecture guide covering directory structure, layered patterns, and development conventions"
+---
+
 # FastAPI + Supabase Architecture Guide
 
 This guide establishes our standard patterns for FastAPI backends with Supabase. Follow these conventions for all projects to ensure consistency and maintainability.
