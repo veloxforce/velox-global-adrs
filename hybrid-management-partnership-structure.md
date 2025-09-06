@@ -1,3 +1,7 @@
+---
+description: "Hybrid management partnership structure separating strategic and operational leadership based on founder strengths"
+---
+
 # UNIVERSAL-001: Implement Hybrid Management Partnership Structure for Operational Scaling
 
 ## Status

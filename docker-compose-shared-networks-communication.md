@@ -1,3 +1,7 @@
+---
+description: "External shared networks for selective cross-Compose service communication with environment isolation"
+---
+
 # DEVELOPMENT-002: Use External Shared Networks for Cross-Compose Service Communication
 
 ## Status

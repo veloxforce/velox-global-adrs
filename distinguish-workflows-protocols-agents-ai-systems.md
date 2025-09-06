@@ -1,3 +1,7 @@
+---
+description: "Architectural distinctions between workflows, protocols, and agents in AI system design"
+---
+
 # 008: Distinguish Workflows, Protocols, and Agents in AI System Architecture
 
 ## Status

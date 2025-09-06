@@ -1,3 +1,7 @@
+---
+description: "Expose custom database schemas to Supabase REST API for non-public schema access"
+---
+
 # 002: Expose Custom Database Schemas to Supabase REST API
 
 ## Status

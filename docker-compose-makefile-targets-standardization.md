@@ -1,3 +1,7 @@
+---
+description: "Standardized Docker Compose Makefile targets with production-first defaults and explicit staging operations"
+---
+
 # 001: Standardize Docker Compose Makefile Targets
 
 ## Status

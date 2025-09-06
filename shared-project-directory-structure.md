@@ -1,3 +1,7 @@
+---
+description: "Shared project directory structure for multi-developer environment collaboration and access"
+---
+
 # 002: Establish Shared Project Directory Structure for Multi-Developer Environment
 
 ## Status

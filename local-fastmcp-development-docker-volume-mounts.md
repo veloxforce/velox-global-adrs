@@ -1,3 +1,7 @@
+---
+description: "Enable local FastMCP development through Docker build context and volume mounts for container access"
+---
+
 # ADR-010: Enable Local FastMCP Development through Docker Build Context and Volume Mounts
 
 ## Status

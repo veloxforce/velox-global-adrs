@@ -1,3 +1,7 @@
+---
+description: "Centralized MCP server hosting to reduce local setup friction and unify access across environments"
+---
+
 # ADR-009: Adopt MetaMCP for Centralized MCP Server Hosting and Management
 
 ## Status

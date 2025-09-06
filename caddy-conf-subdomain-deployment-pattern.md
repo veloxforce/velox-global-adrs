@@ -1,3 +1,6 @@
+---
+description: "Caddy conf.d pattern for subdomain-based service deployment with wildcard DNS and automatic SSL"
+---
 
 # 001: caddy-confd-pattern-container-web-access
 

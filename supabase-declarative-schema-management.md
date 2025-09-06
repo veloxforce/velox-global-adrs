@@ -1,3 +1,7 @@
+---
+description: "Declarative schema management with schema-isolated migrations for multi-project database sharing"
+---
+
 # 001: Use Declarative Schema Management with Schema-Isolated Migrations
 
 ## Status
