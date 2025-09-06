@@ -1,10 +1,4 @@
----
-description: "Declarative schema management where developers define desired state, letting CLI generate migrations with tooling-enforced isolation"
-status: "proposed"
-date: "2025-08-31"
----
-
-# Supabase Declarative Schema Management with Schema-Isolated Migrations
+# 001: Use Declarative Schema Management with Schema-Isolated Migrations
 
 ## Status
 
@@ -29,41 +23,118 @@ We will use declarative schema management where developers define only desired s
 [Developer] → [/migrate] → [Schema File] → [migrate.sh] → [CLI --schema] → [Database]
      ↑                                                                           ↓
      └─────────────────── Review & Commit ←────────────────────────────────────┘
+
 ```
 
-**Tooling Pattern:**
-```bash
-# Developer workflow
-./migrate.sh project_name migration_description
+**The Paradigm Shift:**
 
-# Generates isolation-enforced migration
-supabase gen migration migration_name --schema=schema_project_name
+```sql
+-- BEFORE (Imperative): Think about changes
+ALTER TABLE invoices ADD COLUMN status text;
+ALTER TABLE invoices DROP COLUMN temp_field;
+CREATE INDEX idx_status ON invoices(status);
 
-# Applies to isolated schema
-supabase db push --schema=schema_project_name
+-- AFTER (Declarative): Define end state
+CREATE TABLE project_a.invoices (
+    id bigint primary key generated always as identity,
+    customer text not null,
+    amount decimal(10,2),
+    status text,  -- Just describe what should exist
+    created_at timestamptz default now()
+);
+CREATE INDEX project_a.idx_status ON invoices(status);
+
 ```
 
-**Schema Isolation Strategy:**
-- Each project gets dedicated schema: `schema_project_name`
-- Migrations auto-prefixed with schema context
-- CLI tooling prevents cross-schema interference
-- Shared database instance with logical separation
+**Project Structure:**
+
+```
+project-a/
+├── supabase/
+│   ├── schemas/
+│   │   └── project_a.sql    # Complete truth
+│   └── migrations/
+│       └── *.sql            # Generated only - THESE FILES ARE READ-ONLY
+└── migrate.sh               # Enforces isolation
+
+```
+
+**Lifecycle Sequence:**
+
+```mermaid
+sequenceDiagram
+    participant Dev as Developer
+    participant AI as AI/Prompt
+    participant File as project_x.sql
+    participant Script as migrate.sh
+    participant CLI as supabase db diff
+    participant DB as Database
+
+    Dev->>AI: Request change via prompt
+    AI->>File: Write complete schema
+    Dev->>Script: ./migrate.sh [name]
+    Script->>Script: Validate project_x only
+    Script->>CLI: diff --schema project_x
+    CLI->>CLI: Generate migration
+    CLI-->>Dev: Show SQL changes
+    Dev->>Dev: Review & test locally
+    Dev->>DB: supabase db push
+
+```
+
+**Completion Criteria:**
+
+- Each project uses dedicated PostgreSQL schema (project_a, project_b, etc.)
+- Schema files contain complete desired state
+- Migration script validates single-schema changes
+- AI prompt ensures correct schema syntax
+- Developers never edit migration files
+
+**Tooling Roles:**
+
+- `/migrate`: An AI Prompt that ensures complete, valid schema file generation
+- **migrate.sh**: Enforces schema isolation via --schema flag
+- **CLI**: Handles complex SQL generation and state comparison
 
 ## Consequences
 
 ### ✅ Positive
-- **Simplified Mental Model**: Define desired state, not migration steps
-- **Project Isolation**: Schema separation prevents cross-project impact
-- **State Visibility**: Single file shows complete current schema structure
-- **Tool-Enforced Safety**: CLI prevents accidental cross-schema modifications
-- **Cost Efficiency**: Multiple projects share single database instance
+
+- **Radical simplicity** - describe what you want, not how to get there
+- **Single source of truth** - entire schema visible in one file
+- **Zero SQL migration writing** - CLI generates optimal transformations
+- **Guaranteed isolation** - script prevents cross-project contamination
+- **Minimal cognitive load** - no tracking migration sequences
+- **Fast iteration** - change file, run script, deploy
 
 ### ❌ Negative
-- **Migration Control Loss**: Less control over specific migration implementation
-- **CLI Dependency**: Relies on Supabase CLI for migration generation
-- **Schema Proliferation**: Multiple schemas in single database instance
-- **Rollback Complexity**: Declarative approach may complicate rollback scenarios
+
+- **No migration control** - cannot optimize execution strategies
+- **Tool dependency** - fully reliant on CLI diff accuracy
+- **Review requirement** - must verify generated SQL
+- **DDL only** - no data manipulation support
+- **Forward only** - no built-in rollback mechanism
 
 ### ⚪ Neutral
-- Development workflow changes from imperative migration writing to declarative schema definition
-- Database administration requires understanding multiple schema contexts within single instance
+
+- Both schema and migration files in version control
+- Requires wrapper script for safety
+- New mental model (states not transitions)
+
+## Alternatives Considered
+
+| Alternative | Rejection Reason |
+| --- | --- |
+| **Imperative Migrations** | State scattered across files, requires SQL expertise, violates simplicity |
+| **Single Shared Schema** | No isolation, naming conflicts, coupled deployments |
+| **Separate Databases** | Multiplies costs, defeats economic constraint |
+| **Direct CLI Usage** | Easy to forget --schema flag, risk cross-contamination |
+| **Mixed Declarative/Imperative** | Two mental models, increased complexity |
+
+## References
+
+Essential documentation for implementation:
+
+- [Declarative Database Schemas](https://supabase.com/docs/guides/local-development/declarative-database-schemas) - Core concept and paradigm
+- [CLI db diff Reference](https://supabase.com/docs/reference/cli/supabase-db-diff) - Schema flag usage
+- [Local Development Overview](https://supabase.com/docs/guides/local-development/overview) - Development workflow

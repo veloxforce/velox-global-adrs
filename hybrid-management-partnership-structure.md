@@ -1,10 +1,4 @@
----
-description: "Hybrid management partnership structure separating strategic and operational leadership based on founder strengths"
-status: "proposed"
-date: "2025-07-27"
----
-
-# Hybrid Management Partnership Structure for Operational Scaling
+# UNIVERSAL-001: Implement Hybrid Management Partnership Structure for Operational Scaling
 
 ## Status
 
@@ -29,25 +23,67 @@ We will implement a hybrid management partnership structure that separates strat
 | **Human Operations Manager** | Dirk | Human team building, project execution, delivery management |
 | **Revenue Converter** | Roman | Sales calls and closing, contract negotiation, deal conversion |
 
-**Management Integration Model:**
-- Strategic decisions flow from AI Strategy Engine to operational execution
-- Human Operations Manager maintains team coordination and project delivery
-- Revenue Converter handles all client-facing sales activities and closing
-- Weekly integration meetings ensure alignment across all three functions
+**Operational Flow:**
+
+```
+Lead Generation (Marius & Dirk)
+          ↓
+Sales Calls and Closing (Roman)
+          ↓
+Solution Architecture & Project Brief Creation (Marius)
+          ↓
+Initial Implementation (Marius)
+          ↓
+Human Team Execution (Dirk)
+          ↓
+Client Delivery (Dirk)
+
+```
+
+*Note: Initial Implementation uses "Software Development Template" in Asana. Human Team Execution uses "Client Maintenance Template" for ongoing work and delivery.*
+
+**Handoff Protocols:**
+
+| Stage | From → To | Deliverable | Authority Transfer |
+| --- | --- | --- | --- |
+| **Lead → Sales** | Marius/Dirk → Roman | Qualified lead profile with contact info, basic needs, budget indication | Roman owns from first sales contact |
+| **Sales → Architecture** | Roman → Marius | Signed contract with detailed requirements, constraints, timeline | Marius owns from requirements gathering |
+| **Architecture → Implementation** | Marius → Marius | Complete solution architecture and project brief documentation | Internal process, Marius retains control |
+| **Implementation → Execution** | Marius → Dirk | Working initial version with Client Maintenance Template in Asana | Dirk owns from scaling and delivery phase |
+| **Execution → Delivery** | Dirk → Dirk | Completed project meeting agreed specifications | Dirk maintains until client sign-off |
 
 ## Consequences
 
 ### ✅ Positive
-- **Leveraged Strengths**: Each partner focuses on their natural skill set
-- **Scalable Operations**: Operational management can scale human team without strategic founder bottleneck
-- **Revenue Focus**: Dedicated sales function improves conversion rates and deal velocity
-- **AI-Enhanced Strategy**: Strategic thinking enhanced by AI tools remains competitive advantage
+
+- Each founder manages resources aligned with their natural strengths and expertise
+- Eliminates skill mismatch between AI workflow optimization and human team management
+- Creates scalable operational capacity through hybrid AI/human resource utilization
+- Preserves competitive advantage of AI-enhanced strategic thinking while enabling growth
+- Clear separation of strategic vs operational decision authority reduces partnership friction
+- External sales partner removes revenue conversion bottleneck from founder capacity constraints
 
 ### ❌ Negative
-- **Coordination Overhead**: Three-way partnership requires more structured communication
-- **Role Dependencies**: Strategy Engine success depends on Operations Manager execution quality
-- **Revenue Risk**: Revenue Converter effectiveness directly impacts business sustainability
+
+- Requires coordination protocols between AI agent outputs and human team execution
+- Initial setup complexity in establishing effective handoff procedures between strategic and operational phases
+- Risk of strategic-operational misalignment if communication protocols break down
+- Dependency on external partner for critical revenue conversion function
+- Learning curve required for both founders to master their specialized management approaches
 
 ### ⚪ Neutral
-- Partnership profit sharing may need adjustment based on actual contribution values
-- Role definitions will evolve based on business growth and partner performance
+
+- Different management tools and processes needed for AI agents vs human team members
+- Shift from individual contributor model to management-focused partnership roles
+- Modified communication patterns between founders from collaboration to handoff-based workflow
+
+## Alternatives Considered
+
+| Alternative | Rejection Reason |
+| --- | --- |
+| **Traditional Agency Model** | Requires founder to develop human management skills that conflict with AI workflow optimization expertise |
+| **Solo Founder Operation** | Personal capacity constraints prevent achievement of business growth targets |
+| **Full AI Automation** | Current AI technology limitations insufficient for complete client relationship management and complex delivery |
+| **Complete Delegation to Operations Partner** | Eliminates competitive advantage of AI-enhanced strategic thinking, reduces founder value proposition |
+| **Shared Management of All Resources** | Creates authority boundary confusion and requires both founders to develop incompatible skill sets |
+| **Hire Professional Manager** | Introduces additional equity dilution and management overhead without addressing founder skill utilization |
