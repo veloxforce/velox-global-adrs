@@ -5,7 +5,7 @@ description: "Standardized deployment pattern for FastMCP servers using CLI and 
 # 003: standardize fastmcp cli deployment with fastmcp.json configuration
 
 ## Status
-**Proposed** | Date: 2025-09-04
+**Accepted** | Date: 2025-09-05
 
 ## Context
 - ADR-002 established FastMCP as framework standard but left deployment patterns undefined
@@ -22,7 +22,10 @@ We will standardize all FastMCP server deployments using FastMCP CLI with fastmc
 ```json
 {
   "$schema": "https://gofastmcp.com/public/schemas/fastmcp.json/v1.json",
-  "entrypoint": "server.py",
+  "source": {
+    "path": "server.py",
+    "entrypoint": "mcp"
+  },
   "environment": {
     "dependencies": ["fastmcp", "requests"] # Always just without version numbers
   },
@@ -35,12 +38,45 @@ We will standardize all FastMCP server deployments using FastMCP CLI with fastmc
 
 **Execution Pattern:**
 ```bash
-# Via uvx (no global install)
-uvx fastmcp run server.py
+# Via uvx (no global install) - recommended
+uvx fastmcp run /path/to/fastmcp.json  # Production deployment
+uvx fastmcp run /path/to/server.py     # Direct execution
 
 # Via global FastMCP CLI
-fastmcp run server.py
+fastmcp run /path/to/fastmcp.json     # With configuration
+fastmcp run /path/to/server.py        # Direct execution
 ```
+
+**Container Deployment Patterns:**
+
+For Docker/MetaMCP environments, **always use absolute paths** in fastmcp.json to avoid working directory issues:
+
+```json
+{
+  "$schema": "https://gofastmcp.com/public/schemas/fastmcp.json/v1.json",
+  "source": {
+    "path": "/projects/mcp-servers/server-name/server.py",  // Absolute path required
+    "entrypoint": "mcp"
+  },
+  "environment": {
+    "dependencies": ["requests", "python-frontmatter"]
+  }
+}
+```
+
+```bash
+# Container execution - references fastmcp.json with absolute paths
+uvx fastmcp run /projects/mcp-servers/server-name/fastmcp.json
+
+# Local development - relative paths work fine
+uvx fastmcp run ./fastmcp.json
+uvx fastmcp run ./server.py
+```
+
+**Path Resolution Rules:**
+- **Production/Container:** Use absolute paths in `fastmcp.json` "source.path"
+- **Local Development:** Relative paths acceptable for direct CLI execution
+- **Why:** Container working directories differ from file locations, causing path resolution failures
 
 **Environment Variable Extrapolation:**
 - Verified working: `${VAR}` syntax in fastmcp.json reads from .env files
@@ -49,13 +85,15 @@ fastmcp run server.py
 
 **Reference Documentation:**
 - [FastMCP JSON Schema](https://gofastmcp.com/public/schemas/fastmcp.json/v1.json)
-- [FastMCP CLI Guide](https://gofastmcp.com/fastmcp/cli/run)
-- [Deployment Documentation](https://gofastmcp.com/deployment/running-server)
+- [FastMCP CLI Commands](https://gofastmcp.com/deployment/server-configuration)
+- [Server Configuration Guide](https://gofastmcp.com/deployment/server-configuration)
+- [Running Servers Documentation](https://gofastmcp.com/deployment/running-server)
 
 **Completion Criteria:**
-- All MCP servers include fastmcp.json configuration
+- All MCP servers include fastmcp.json configuration with proper `source` object structure
 - Environment variables use `${VAR}` extrapolation pattern
-- Servers run via `fastmcp run` or `uvx fastmcp run`
+- Servers run via `uvx fastmcp run /path/to/fastmcp.json` for production
+- Container deployments use absolute paths in fastmcp.json "source.path"
 - pyproject.toml eliminated for MCP server projects
 
 ## Consequences
@@ -108,14 +146,25 @@ mcp.run()  # Default STDIO transport
 mcp.run(transport="streamable-http", host="0.0.0.0", port=8000)
 ```
 
+**Troubleshooting Common Issues:**
+
+| Error Pattern | Root Cause | Solution |
+|---------------|------------|----------|
+| `source Field required [type=missing]` | Missing `source` object in fastmcp.json | Add proper `source: {"path": "...", "entrypoint": "mcp"}` structure |
+| `File not found: /app/apps/backend/server.py` | Path resolution in wrong directory | Use absolute paths in container fastmcp.json |
+| `spawn fastmcp EACCES` | Permission/PATH issues in container | Use `uvx fastmcp run` instead of direct `fastmcp` |
+| `No module named 'frontmatter'` | Dependencies not installed from config | Ensure `environment.dependencies` array is properly configured |
+
 ## References
 
 - **Builds on**: ADR-002 (FastMCP framework adoption)
 - **Enables**: ADR-010 (MetaMCP deployment requirements)
-- **Testing evidence**: Bruce BEM server migration (2025-09-04) proved environment extrapolation
+- **Testing evidence**: 
+  - Bruce BEM server migration (2025-09-04) proved environment extrapolation
+  - Velox ADR Server deployment (2025-09-05) confirmed container path resolution requirements
 - **Schema reference**: https://gofastmcp.com/public/schemas/fastmcp.json/v1.json
 - **CLI version tested**: FastMCP 2.12.2 with MCP SDK 1.13.1
 
 ---
 
-*Last Updated: 2025-09-04*
+*Last Updated: 2025-09-05*
