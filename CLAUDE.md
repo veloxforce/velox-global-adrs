@@ -79,6 +79,11 @@ description: "Brief description for MCP metadata"
 
 ---
 
+## 🛠️ Troubleshooting
+- **Common Issues** → `docs/troubleshooting/`
+
+---
+
 ## 🔄 For Future Claude Instances
 
 - This repository serves as MCP server content backend
