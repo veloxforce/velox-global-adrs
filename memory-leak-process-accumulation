@@ -1,0 +1,242 @@
+---
+title: "Memory Leak Process Accumulation Fix"
+description: "Daily container restart automation to resolve MCP server process accumulation and memory exhaustion"
+---
+
+# MetaMCP - Memory Leak Process Accumulation (Daily Container Restart Fix)
+
+## Symptoms
+
+- MetaMCP container memory usage grows from ~200MB to 14GB+ over days
+- Process count accumulates from ~50 to 600+ processes daily (~140 processes/day)
+- Server becomes unresponsive due to memory exhaustion
+- OOM killer triggers repeatedly
+- Error: `docker exec metamcp ps aux | wc -l` returns 100+ processes after short uptime
+
+## Root Cause
+
+- MCP server processes spawned by MetaMCP never terminate after completing work
+- Each MCP operation leaves ~100MB zombie process sleeping indefinitely
+- Session cleanup relies on client DELETE calls that rarely happen (especially with Claude Code)
+- Linear accumulation guarantees eventual OOM regardless of server size
+- No built-in cleanup mechanism exists in current MetaMCP architecture
+
+## Solution
+
+### 1. Document Current State
+
+Establish baseline to measure improvement:
+
+```bash
+# Check current process accumulation
+docker exec metamcp ps aux | wc -l
+
+# Check memory usage
+docker stats metamcp --no-stream --format "{{.Container}}\t{{.MemUsage}}"
+```
+
+### 2. Test Manual Restart Process
+
+Verify restart process works cleanly:
+
+```bash
+cd /path/to/metamcp/project
+docker compose down
+docker compose up -d
+
+# Verify containers are healthy
+docker compose ps
+```
+
+### 3. Create Automated Restart Script
+
+Create `/home/shared/metamcp-restart.sh`:
+
+```bash
+#!/bin/bash
+
+# MetaMCP Daily Container Restart - Memory Leak Reset Automation
+LOG_FILE="/var/log/metamcp-restart.log"
+PROJECT_DIR="/path/to/your/metamcp/project"  # UPDATE THIS PATH
+DATE_FORMAT="%Y-%m-%d %H:%M:%S"
+
+# Ensure log directory exists
+sudo mkdir -p /var/log
+sudo touch $LOG_FILE
+sudo chown $(whoami):$(whoami) $LOG_FILE
+
+# Logging function
+log_message() {
+    echo "[$(date +"$DATE_FORMAT")] $1" >> $LOG_FILE
+}
+
+# Error handling
+set -e
+trap 'log_message "ERROR: MetaMCP restart failed at line $LINENO"' ERR
+
+# Start restart process
+log_message "=== MetaMCP Container Restart Started ==="
+
+# Navigate to project directory
+cd $PROJECT_DIR || {
+    log_message "FATAL: Cannot access project directory $PROJECT_DIR"
+    exit 1
+}
+
+# Capture pre-restart metrics
+PRE_PROCESSES=$(docker exec metamcp ps aux | wc -l 2>/dev/null || echo "unknown")
+PRE_MEMORY=$(docker stats metamcp --no-stream --format "{{.MemUsage}}" 2>/dev/null || echo "unknown")
+log_message "Pre-restart: $PRE_PROCESSES processes, $PRE_MEMORY memory usage"
+
+# Perform graceful shutdown
+log_message "Stopping containers..."
+docker compose down >> $LOG_FILE 2>&1
+
+# Brief pause for cleanup
+sleep 5
+
+# Start containers with fresh state
+log_message "Starting containers..."
+docker compose up -d >> $LOG_FILE 2>&1
+
+# Wait for containers to be healthy
+log_message "Waiting for containers to become healthy..."
+RETRY_COUNT=0
+MAX_RETRIES=12  # 2 minutes total
+
+while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+    if docker compose ps --format "table {{.Status}}" | grep -q "healthy"; then
+        log_message "Containers are healthy"
+        break
+    fi
+    sleep 10
+    RETRY_COUNT=$((RETRY_COUNT + 1))
+done
+
+if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+    log_message "WARNING: Containers may not be fully healthy after 2 minutes"
+fi
+
+# Capture post-restart metrics
+sleep 10
+POST_PROCESSES=$(docker exec metamcp ps aux | wc -l 2>/dev/null || echo "unknown")
+POST_MEMORY=$(docker stats metamcp --no-stream --format "{{.MemUsage}}" 2>/dev/null || echo "unknown")
+
+log_message "Post-restart: $POST_PROCESSES processes, $POST_MEMORY memory usage"
+log_message "Process reduction: $PRE_PROCESSES -> $POST_PROCESSES"
+log_message "=== MetaMCP Container Restart Completed Successfully ==="
+
+# Final container status for verification
+docker compose ps >> $LOG_FILE 2>&1
+
+exit 0
+```
+
+### 4. Make Script Executable
+
+```bash
+chmod +x /home/shared/metamcp-restart.sh
+```
+
+### 5. Install Daily Cron Job
+
+Set up automatic 1AM daily restart:
+
+```bash
+echo "0 1 * * * /home/shared/metamcp-restart.sh" | crontab -
+
+# Verify installation
+crontab -l
+```
+
+## Verification
+
+### Test Script Execution
+
+```bash
+# Test script manually
+/home/shared/metamcp-restart.sh
+
+# Check process count reduction
+docker exec metamcp ps aux | wc -l
+# Expected: ~18-50 processes (down from 600+)
+
+# Check memory usage reduction
+docker stats metamcp --no-stream --format "{{.MemUsage}}"
+# Expected: ~1GB (down from 14GB+)
+```
+
+### Verify Automation
+
+```bash
+# Verify cron job installed
+crontab -l
+# Expected output: 0 1 * * * /home/shared/metamcp-restart.sh
+
+# Check restart logs
+tail -20 /var/log/metamcp-restart.log
+# Should show successful restart with process/memory metrics
+
+# Test web interface accessibility
+curl -s -o /dev/null -w '%{http_code}' http://localhost:12008
+# Expected: 200
+```
+
+## Expected Results
+
+- **Process count**: Reduces from 600+ to ~25 processes (95%+ reduction)
+- **Memory usage**: Drops from 14GB+ to ~1GB (90%+ reduction)
+- **Restart time**: ~60-90 seconds total downtime at 1AM
+- **Data persistence**: PostgreSQL data survives restart (volume mounted)
+- **Daily reset cycle**: Fresh performance each morning, gradual accumulation during day
+
+## Related Issues
+
+- **GitHub Issue**: [MCP server processes never terminate, accumulating until OOM](https://github.com/metatool-ai/metamcp/issues/162)
+- **Alternative branch**: `docker-per-mcp` branch may provide better isolation
+- **Transport consideration**: Consider switching from Streamable HTTP to SSE transport for better session cleanup
+- **Monitoring**: Monitor process count with `watch docker exec metamcp ps aux | wc -l`
+
+## Customization Notes
+
+### For Multiple Servers
+
+- **Update PROJECT_DIR** in script to match your server's MetaMCP installation path
+- **Adjust restart time** by modifying cron schedule (currently `0 1 * * *` = 1AM daily)
+- **Unique log paths** for multiple servers: `/var/log/metamcp-restart-server1.log`
+
+### Log Management
+
+```bash
+# Add log rotation to prevent disk space issues
+sudo tee /etc/logrotate.d/metamcp-restart << EOF
+/var/log/metamcp-restart.log {
+    daily
+    rotate 30
+    compress
+    missingok
+    notifempty
+}
+EOF
+```
+
+### Alternative Scheduling
+
+```bash
+# Different restart times (modify cron schedule)
+# 2AM daily: 0 2 * * *
+# Every 12 hours: 0 */12 * * *
+# Weekly Sunday 1AM: 0 1 * * 0
+```
+
+## Prevention and Monitoring
+
+Monitor your system to catch accumulation early:
+
+```bash
+# Add to monitoring script
+PROCESS_COUNT=$(docker exec metamcp ps aux | wc -l)
+if [ $PROCESS_COUNT -gt 200 ]; then
+    echo "WARNING: High process count detected: $PROCESS_COUNT"
+fi
+```
