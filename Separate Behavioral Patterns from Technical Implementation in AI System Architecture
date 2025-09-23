@@ -1,0 +1,97 @@
+# 007: Separate Behavioral Patterns from Technical Implementation in AI System Architecture
+
+## Status
+**Accepted** | Date: 2025-06-27
+
+## Context
+- AI systems using tools require both behavioral guidance and technical specifications
+- System prompts and tool descriptions often contain overlapping information
+- API changes currently require updates in multiple locations, increasing maintenance burden
+- Teams struggle to determine where specific guidance belongs
+- Mixing behavioral and technical concerns reduces clarity and increases coupling
+- Different team members (prompt engineers vs. API developers) need to modify different aspects
+- Testing and iteration cycles are slowed by unclear boundaries
+
+## Decision
+We will enforce strict separation of concerns between system prompts and tool descriptions.
+
+**Architectural Boundaries:**
+
+```
+┌─────────────────────────────────────┐
+│         SYSTEM PROMPT               │
+│  (Behavioral Layer)                 │
+│                                     │
+│  • AI Identity & Role               │
+│  • Communication Patterns           │
+│  • Decision Boundaries              │
+│  • User Interaction Principles     │
+│                                     │
+│         ↓ References ↓              │
+└─────────────────────────────────────┘
+                │
+┌─────────────────────────────────────┐
+│       TOOL DESCRIPTION              │
+│   (Implementation Layer)            │
+│                                     │
+│  • Technical Capabilities           │
+│  • Parameter Specifications         │
+│  • API Field Mappings              │
+│  • Data Transformation Rules        │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**Responsibility Matrix:**
+
+| Content Type | System Prompt | Tool Description |
+|--------------|---------------|------------------|
+| **AI personality and role** | ✅ Owner | ❌ References only |
+| **Communication style** | ✅ Owner | ❌ None |
+| **User interaction patterns** | ✅ Owner | ❌ None |
+| **Behavioral principles** | ✅ Owner | ❌ None |
+| **Tool parameter details** | ❌ None | ✅ Owner |
+| **API field mappings** | ❌ None | ✅ Owner |
+| **Data transformation logic** | ❌ Principles only | ✅ Implementation |
+| **Error handling patterns** | ✅ User-facing | ✅ Technical details |
+| **Domain knowledge** | ✅ Conceptual | ✅ Technical specifics |
+
+**Completion Criteria:**
+- No API field names appear in system prompts
+- No behavioral guidance duplicated in tool descriptions
+- Clear ownership boundaries established
+- Single source of truth for each concern
+
+**Implementation Specifics:**
+- System prompts define WHAT and WHY
+- Tool descriptions define HOW and WITH WHAT
+- Cross-references allowed only from prompt to tool, never reverse
+
+## Consequences
+
+### ✅ Positive
+- **Maintainability**: API changes only require tool description updates
+- **Clarity**: Clear ownership reduces confusion about where to make changes
+- **Scalability**: New tools can be added without modifying system prompt
+- **Team Efficiency**: Different specialists can work on their areas independently
+- **Testing**: Behavioral and technical aspects can be tested separately
+
+### ❌ Negative
+- **Initial Complexity**: Requires careful planning to separate concerns properly
+- **Learning Curve**: Team members must understand the separation principle
+- **Potential Gaps**: Risk of missing guidance if boundaries aren't clear
+
+### ⚪ Neutral
+- **Documentation Needs**: Requires clear documentation of the separation principle
+- **Review Process**: Changes may need cross-functional review to ensure alignment
+- **Migration Effort**: Existing systems need refactoring to follow this pattern
+
+## Alternatives Considered
+
+| Alternative | Rejection Reason |
+|-------------|------------------|
+| **Everything in System Prompt** | Creates monolithic, hard-to-maintain prompts that mix concerns |
+| **Everything in Tool Descriptions** | Loses behavioral consistency across different tools |
+| **Duplicate Information** | Violates DRY principle, creates synchronization problems |
+| **No Clear Boundaries** | Current state - leads to confusion and maintenance issues |
+| **Tool-Specific Prompts** | Fragments AI identity and behavioral patterns |
