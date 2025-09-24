@@ -95,3 +95,11 @@ We will enforce strict separation of concerns between system prompts and tool de
 | **Duplicate Information** | Violates DRY principle, creates synchronization problems |
 | **No Clear Boundaries** | Current state - leads to confusion and maintenance issues |
 | **Tool-Specific Prompts** | Fragments AI identity and behavioral patterns |
+
+### Resources
+  3. MCP Best Practices (Official)
+
+  - URL: https://www.speakeasy.com/mcp/using-mcp/using-tools
+  - Key Quote: "Tool descriptions and schema descriptions serve different purposes - tool descriptions help with tool selection and understanding, while schema 
+  descriptions guide proper usage"
+  - Validation: Clear functional separation confirmed
