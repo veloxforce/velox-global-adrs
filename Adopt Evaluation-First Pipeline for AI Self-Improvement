@@ -1,0 +1,67 @@
+# ADR-011: Adopt Evaluation-First Pipeline for AI Self-Improvement
+
+## Status
+**Proposed** | Date: 2025-09-30
+
+## Context
+- Manual workflow of copying AI interaction snippets into markdown files for analysis is unsustainable
+- Iterative improvement of AI behaviors (commands, agents, rags) constrained by evaluation bottleneck, not AI capability
+- Data for improvement already exists in conversation logs - system to make it accessible does not
+- Prompt engineering methodology emphasizes iterative refinement, but lacks tooling infrastructure to support it at scale
+- Current approach: ad-hoc markdown exports → manual AI analysis → sporadic command updates
+- Time investment in evaluation pipeline exceeds value extracted from improvements
+- Pattern repeats across projects: soloforce (command improvement), other projects (rag/agent behavior)
+
+## Decision
+We will build systematic evaluation-first pipeline infrastructure that captures AI input/output data, enables structured labeling (manual initially, automatable via SLM training later), and creates feedback loops for continuous AI behavior improvement.
+
+**Implementation Specifics:**
+- **Phase 1: Commands** - Start with AI command improvement (easiest entry point, aligns with prompt engineering iteration, data readily available)
+- **Data capture** - Conversation exports → filtered extraction → structured labeling interface
+- **Labeling workflow** - Manual human labeling establishes ground truth dataset
+- **SLM automation path** - Labeled datasets train small language models to automate future labeling at scale
+- **Expansion pattern** - Commands → agent behaviors → rag improvements (increasing complexity)
+- **First implementation** - Friction labeling tool (label_friction_pairs.py) built this session
+
+**Strategic Principle:** Data exists, system doesn't - build smooth pipeline to unlock iterative improvement methodology
+
+## Consequences
+
+### ✅ Positive
+- Replaces unsustainable manual markdown export workflow with systematic pipeline
+- Universal pattern applicable to any AI behavior where input/output exists
+- Aligns AI improvement with proven prompt engineering iterative methodology
+- Labeled datasets enable future SLM training for automated evaluation
+- Commands-first approach provides quick wins before tackling agent/rag complexity
+- Scales across projects once pipeline infrastructure established
+- Transforms one-time improvements into continuous improvement cycles
+
+### ❌ Negative
+- Requires upfront pipeline infrastructure investment before seeing improvement results
+- Manual labeling remains bottleneck until sufficient data exists for SLM training
+- Time spent building evaluation tools delays direct feature development
+- SLM training infrastructure adds complexity and maintenance burden
+- Risk of over-engineering evaluation when simple manual review might suffice for low-frequency improvements
+
+### ⚪ Neutral
+- Shifts development focus from feature execution to evaluation workflow quality
+- Introduces new artifact type (labeled datasets) requiring storage and versioning
+- Creates dependency on conversation export quality and format stability
+- Learning curve for structured evaluation methodology vs ad-hoc review
+
+## Alternatives Considered
+
+| Alternative | Rejection Reason |
+|-------------|------------------|
+| **Continue manual markdown export workflow** | Unsustainable time investment, doesn't scale across projects, prevents iteration speed necessary for meaningful improvement |
+| **Outsource labeling to third party** | Context-specific knowledge required for accurate labeling (what constitutes "friction" in our commands), cost prohibitive for continuous improvement cycles |
+| **Skip evaluation, rely on intuition** | No systematic feedback mechanism to validate improvements, repeated investigation of same issues across projects, improvements remain anecdotal |
+| **Build SLM automation first** | No ground truth labeled data to train on, premature optimization before understanding labeling requirements |
+
+---
+
+**Key Resources:**
+- First implementation: `label_friction_pairs.py` (friction labeling tool for command improvement)
+- Related decision: [ADR-010: Adopt Simple Friction Labeling for Personal Workflow Improvement](./ADR-010-adopt-simple-friction-labeling-for-personal-workflow-improvement.md)
+- Conversation exports: `conversation_data/` directory (filtered JSONL format)
+- Prompt engineering methodology: Context verification through iterative refinement
