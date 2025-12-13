@@ -359,6 +359,85 @@ FastAPI resolves automatically:
   FastAPI provides all dependencies in correct order
 ```
 
+## JWT Verification with Supabase
+
+For authentication, use Supabase SDK's `get_claims()` method which verifies JWTs via JWKS (RS256 asymmetric). No shared secret needed.
+
+### Authentication Flow
+
+```
+Frontend                          Supabase Auth                    Backend
+   |                                   |                              |
+   |-- signInWithPassword(email,pw) -->|                              |
+   |<-------- JWT token ---------------|                              |
+   |                                                                  |
+   |-------------- Request + Authorization: Bearer <JWT> ------------>|
+   |                                              verify via get_claims|
+   |                                              extract user claims  |
+```
+
+### JWT Verification Dependency
+
+```python
+# app/dependencies.py
+from typing import Annotated
+from fastapi import Depends, Header
+from app.exceptions import UnauthorizedException
+from app.supabase import get_supabase_client
+
+async def get_current_user(
+    authorization: Annotated[str | None, Header()] = None,
+) -> dict:
+    """Verify Supabase JWT and extract user claims."""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise UnauthorizedException("Invalid Authorization header")
+
+    token = authorization.removeprefix("Bearer ")
+    client = await get_supabase_client()
+
+    try:
+        # Supabase SDK verifies via JWKS (RS256) - synchronous call
+        response = client.auth.get_claims(jwt=token)
+        if response is None:
+            raise UnauthorizedException("Invalid or expired token")
+
+        claims = response.get("claims") if isinstance(response, dict) else None
+        if not claims:
+            raise UnauthorizedException("Invalid token claims")
+
+        return claims  # Contains: sub, email, user_roles
+    except Exception as e:
+        raise UnauthorizedException(f"JWT verification failed: {e}")
+```
+
+### Role-Based Access Control
+
+```python
+def require_role(required_role: str):
+    """Factory for role-checking dependencies."""
+    async def role_checker(user: dict = Depends(get_current_user)) -> dict:
+        if required_role not in user.get("user_roles", []):
+            raise UnauthorizedException(f"Role '{required_role}' required")
+        return user
+    return role_checker
+
+# Usage in routes
+@router.get("/admin")
+async def admin_only(user: dict = Depends(require_role("admin"))):
+    ...
+```
+
+### Configuration
+
+```python
+# app/config.py - No JWT_SECRET needed
+class Settings(BaseSettings):
+    SUPABASE_URL: str
+    SUPABASE_KEY: SecretStr  # Anon/publishable key
+```
+
+> **Note:** Login/logout happens client-side via Supabase SDK. Backend only verifies tokens.
+
 ## Async First Development
 
 FastAPI is built on async foundations, and with Supabase's async client support, we must maintain async operations throughout our entire application stack. This "async all the way down" approach ensures maximum performance benefits.
