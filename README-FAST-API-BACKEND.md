@@ -495,16 +495,22 @@ async def get_supabase_client() -> AsyncClient:
     return _supabase_client
 
 # app/main.py
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.supabase import get_supabase_client
 
-app = FastAPI()
-
-@app.on_event("startup")
-async def startup_event():
-    # Initialize client on startup
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Initialize resources on startup, cleanup on shutdown."""
+    # Startup
     await get_supabase_client()
+    yield
+    # Shutdown (cleanup if needed)
+
+app = FastAPI(lifespan=lifespan)
 ```
+
+> **Note:** The `@app.on_event("startup")` decorator is deprecated. Use the `lifespan` async context manager instead.
 
 ## Centralized Error Handling
 
