@@ -904,3 +904,110 @@ If your Supabase instance doesn't have a `ping` RPC function, you can use an alt
 # Alternative lightweight health check
 result = await supabase.from_('some_small_table').select('count(*)', count=CountMethod.exact).limit(1).execute()
 ```
+
+## Error Monitoring
+
+Global error capture ensures all API errors are reported to monitoring tools (Sentry, GlitchTip, etc.).
+
+### Required Setup
+
+**1. Install SDK:**
+
+```bash
+uv add sentry-sdk[fastapi]
+```
+
+**2. Initialize BEFORE app creation (in main.py):**
+
+```python
+import sentry_sdk
+
+# Initialize FIRST - before FastAPI app creation
+sentry_sdk.init(
+    dsn="YOUR_DSN",
+    environment=os.getenv("ENVIRONMENT", "development"),
+)
+
+app = FastAPI()
+```
+
+**3. Add generic Exception handler (prevents info leak + ensures capture):**
+
+```python
+from fastapi import Request
+from fastapi.responses import JSONResponse
+import sentry_sdk
+
+@app.exception_handler(Exception)
+async def catch_all_handler(request: Request, exc: Exception):
+    # Capture to Sentry
+    sentry_sdk.capture_exception(exc)
+
+    # Return safe response (no stack trace leak)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error"}
+    )
+```
+
+### What Gets Captured
+
+| Error Type | Captured By |
+|------------|-------------|
+| Unhandled 500 errors | Sentry SDK auto-capture |
+| Custom exception handlers | Explicit `sentry_sdk.capture_exception()` |
+| Background task failures | Explicit capture in task |
+
+### Custom Exception Handlers
+
+For non-500 responses that should still be monitored, add explicit capture:
+
+```python
+@app.exception_handler(BusinessLogicError)
+async def business_logic_handler(request: Request, exc: BusinessLogicError):
+    # Capture even though we return 422
+    sentry_sdk.capture_exception(exc)
+
+    return JSONResponse(
+        status_code=422,
+        content={"detail": str(exc)}
+    )
+```
+
+### Anti-patterns to Avoid
+
+**❌ Silent exception swallowing:**
+
+```python
+try:
+    risky_operation()
+except Exception:
+    pass  # Error disappears - monitoring never sees it
+```
+
+**✅ Capture before handling:**
+
+```python
+try:
+    risky_operation()
+except Exception as e:
+    sentry_sdk.capture_exception(e)
+    # Then handle gracefully
+```
+
+**❌ No generic Exception handler:**
+
+```python
+# BAD: Unhandled exceptions leak stack traces to client
+app = FastAPI()
+```
+
+**✅ Generic handler prevents info leak:**
+
+```python
+# GOOD: All unhandled exceptions caught, logged, safe response returned
+@app.exception_handler(Exception)
+async def catch_all_handler(request, exc):
+    sentry_sdk.capture_exception(exc)
+    return JSONResponse(status_code=500, content={"detail": "Internal error"})
+```

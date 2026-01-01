@@ -496,7 +496,100 @@ export function AdminPage() {
       </content>
     </context_usage>
   </data_hooks>
-  
+
+  <error_monitoring>
+    <section_title>Error Monitoring</section_title>
+    <description>Global error capture ensures all API and render errors are reported to monitoring tools (Sentry, GlitchTip, etc.)</description>
+
+    <required_setup>
+      <subsection_title>Required Setup</subsection_title>
+      <content>
+        **1. Install SDK:**
+        <code_block>
+npm install @sentry/react
+        </code_block>
+
+        **2. Initialize BEFORE React renders (in main.tsx):**
+        <code_block>
+import * as Sentry from '@sentry/react';
+
+// Initialize FIRST - before createRoot()
+Sentry.init({
+  dsn: 'YOUR_DSN',
+  environment: import.meta.env.MODE,
+});
+        </code_block>
+
+        **3. Configure QueryClient with global error handlers:**
+        <code_block>
+import { QueryClient, QueryCache, MutationCache } from '@tanstack/react-query';
+import * as Sentry from '@sentry/react';
+
+const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error) => Sentry.captureException(error),
+  }),
+  mutationCache: new MutationCache({
+    onError: (error) => Sentry.captureException(error),
+  }),
+});
+        </code_block>
+
+        **4. Wrap App in ErrorBoundary:**
+        <code_block>
+import * as Sentry from '@sentry/react';
+
+function App() {
+  return (
+    &lt;Sentry.ErrorBoundary fallback={&lt;ErrorFallback /&gt;}&gt;
+      &lt;RouterProvider router={router} /&gt;
+    &lt;/Sentry.ErrorBoundary&gt;
+  );
+}
+        </code_block>
+      </content>
+    </required_setup>
+
+    <what_gets_captured>
+      <subsection_title>What Gets Captured</subsection_title>
+      <content>
+        | Error Type | Source | Captured By |
+        |------------|--------|-------------|
+        | API query errors | Network failures, 4xx, 5xx | QueryCache onError |
+        | API mutation errors | POST/PUT/DELETE failures | MutationCache onError |
+        | React render errors | Component crashes | Sentry.ErrorBoundary |
+      </content>
+    </what_gets_captured>
+
+    <anti_patterns>
+      <subsection_title>Anti-patterns to Avoid</subsection_title>
+      <content>
+        **❌ Toast-only error handling:**
+        <code_block>
+// BAD: Error is "handled" - monitoring never sees it
+onError: (error) => toast.error(error.message)
+        </code_block>
+
+        **✅ Global handlers ensure capture:**
+        The QueryCache/MutationCache onError handlers fire for ALL queries/mutations, even when individual hooks have their own onError. Your existing toast pattern continues to work - global handlers run first.
+
+        **❌ No ErrorBoundary:**
+        <code_block>
+// BAD: React render errors crash app with white screen
+&lt;App /&gt;
+        </code_block>
+
+        **✅ ErrorBoundary catches render errors:**
+        <code_block>
+// GOOD: Render errors caught, reported, fallback UI shown
+&lt;Sentry.ErrorBoundary fallback={&lt;ErrorUI /&gt;}&gt;
+  &lt;App /&gt;
+&lt;/Sentry.ErrorBoundary&gt;
+        </code_block>
+      </content>
+    </anti_patterns>
+  </error_monitoring>
+
   <routing>
     <section_title>Routing: Layout Component Pattern (Recommended)</section_title>
     <content>
