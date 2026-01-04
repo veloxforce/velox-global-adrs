@@ -495,6 +495,66 @@ export function AdminPage() {
         </code_block>
       </content>
     </context_usage>
+
+    <data_fetching_anti_patterns>
+      <subsection_title>4. Data Fetching Anti-Patterns</subsection_title>
+      <content>
+        **❌ Direct API Calls in Components:**
+
+        Never call API services directly from components. This bypasses React Query's caching, causes race conditions, and scatters data fetching logic.
+
+        <code_block>
+// BAD: Direct API call in component
+function UserProfile({ userId }) {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    apiClient.get(`/users/${userId}`).then(setUser);  // ❌
+  }, [userId]);
+
+  return <div>{user?.name}</div>;
+}
+        </code_block>
+
+        **Why this is problematic:**
+        - **Race conditions** - Multiple requests can resolve out of order
+        - **No caching** - Same data fetched repeatedly across components
+        - **Memory leaks** - State updates on unmounted components
+        - **No loading/error states** - Must manually track fetch status
+        - **Poor testability** - Fetch logic mixed with render logic
+        - **Duplicated code** - Same fetch logic copied across components
+
+        **✅ Use Data Hooks Instead:**
+
+        <code_block>
+// GOOD: Data hook encapsulates fetching
+// shared/data/useUserData.js
+export function useUserData(userId) {
+  return useQuery({
+    queryKey: ['user', userId],
+    queryFn: () => apiClient.get(`/users/${userId}`),
+  });
+}
+
+// Component just uses the hook
+function UserProfile({ userId }) {
+  const { data: user, isLoading } = useUserData(userId);
+
+  if (isLoading) return <Spinner />;
+  return <div>{user?.name}</div>;
+}
+        </code_block>
+
+        **The Correct Dependency Chain:**
+        ```
+        Component → Shared Data Hook → Core Service → API
+        ```
+
+        **Sources:**
+        - [You Might Not Need an Effect – React Docs](https://react.dev/learn/you-might-not-need-an-effect)
+        - [TanStack Query Overview](https://tanstack.com/query/latest/docs/framework/react/overview)
+      </content>
+    </data_fetching_anti_patterns>
   </data_hooks>
 
   <error_monitoring>
