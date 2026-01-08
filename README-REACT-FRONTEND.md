@@ -555,6 +555,87 @@ function UserProfile({ userId }) {
         - [TanStack Query Overview](https://tanstack.com/query/latest/docs/framework/react/overview)
       </content>
     </data_fetching_anti_patterns>
+
+    <mutation_anti_patterns>
+      <subsection_title>5. Data Hook Mutation Anti-Patterns</subsection_title>
+      <content>
+        **❌ Hardcoding Field Values in Mutations:**
+
+        Never hardcode field values inside data hook mutations. Hooks are data access layers, not business logic layers. The caller should control what gets inserted.
+
+        <code_block>
+// BAD: Hook hardcodes business logic
+export function useEntityData() {
+  const create = useMutation({
+    mutationFn: async (input) => {
+      await database.from("entities").insert({
+        ...input,
+        is_predefined: false,  // ❌ Hardcoded - blocks admin use case
+        user_id: user.id,      // ❌ Hardcoded - blocks system entities
+      });
+    },
+  });
+}
+        </code_block>
+
+        **Why this is problematic:**
+        - **Blocks reuse** - Same hook can't serve admin (is_predefined=true) and user (is_predefined=false)
+        - **Violates SRP** - Hook encodes business rules that belong in the caller
+        - **Hidden behavior** - Caller doesn't know fields are being overwritten
+        - **Testing difficulty** - Can't test different scenarios without modifying hook
+
+        **✅ Caller Controls All Field Values:**
+
+        <code_block>
+// GOOD: Hook passes through what caller provides
+export function useEntityData() {
+  const create = useMutation({
+    mutationFn: async (input) => {
+      await database.from("entities").insert(input);  // ✅ Pass-through
+    },
+  });
+
+  return { create: create.mutate };
+}
+
+// Caller controls values based on context
+function AdminPage() {
+  const { create } = useEntityData();
+  const { isAdminMode } = useAdminMode();
+  const { user } = useAuth();
+
+  const handleCreate = (formData) => {
+    create({
+      ...formData,
+      is_predefined: isAdminMode,              // ✅ Caller decides
+      user_id: isAdminMode ? null : user.id,   // ✅ Caller decides
+    });
+  };
+}
+        </code_block>
+
+        **The Principle:**
+        ```
+        Hooks = Data Access (WHAT to persist)
+        Callers = Business Logic (HOW to use the hook)
+        ```
+
+        **Default Values (if needed):**
+        If defaults are required, make them explicit and overridable:
+
+        <code_block>
+// ACCEPTABLE: Explicit defaults that caller can override
+const create = useMutation({
+  mutationFn: async (input) => {
+    await database.from("entities").insert({
+      is_predefined: false,  // Default, but...
+      ...input,              // ...caller's values win
+    });
+  },
+});
+        </code_block>
+      </content>
+    </mutation_anti_patterns>
   </data_hooks>
 
   <error_monitoring>
