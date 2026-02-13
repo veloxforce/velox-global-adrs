@@ -789,7 +789,44 @@ export const router = createBrowserRouter([
       7. **Barrel Files:** Always name `index.js`
     </content>
   </naming_conventions>
-  
+
+  <design_system>
+    <section_title>Design System: CSS Variables</section_title>
+    <description>All visual styling must reference CSS custom properties defined in index.css. Never hardcode color values in components.</description>
+
+    <rule>
+      <rule_title>**Setup**</rule_title>
+      <rule_content>
+        Shadcn/ui projects define all colors as CSS custom properties in `src/index.css`. These are the single source of truth for theming. Use [tweakcn.com](https://tweakcn.com/) to generate color variants — it outputs the CSS variables for `index.css`.
+      </rule_content>
+    </rule>
+
+    <rule>
+      <rule_title>**Usage**</rule_title>
+      <rule_content>
+        Always use Tailwind's semantic color classes that reference CSS variables:
+        <code_block>
+// CORRECT: Uses CSS variable via Tailwind
+&lt;div className="bg-primary text-primary-foreground"&gt;
+&lt;div className="bg-muted text-muted-foreground"&gt;
+&lt;div className="border-border bg-card"&gt;
+
+// WRONG: Hardcoded color values
+&lt;div className="bg-blue-500 text-white"&gt;
+&lt;div style={{ color: '#3b82f6' }}&gt;
+&lt;div className="bg-[#1a1a2e]"&gt;
+        </code_block>
+      </rule_content>
+    </rule>
+
+    <rule>
+      <rule_title>**Why This Matters**</rule_title>
+      <rule_content>
+        Theme changes = update `index.css` only. If components hardcode colors, every color change requires touching every component file. CSS variables make theming a one-file operation.
+      </rule_content>
+    </rule>
+  </design_system>
+
   <ai_assistant>
     <section_title>AI Implementation Assistant</section_title>
     <content>
