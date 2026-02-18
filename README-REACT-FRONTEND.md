@@ -827,6 +827,65 @@ export const router = createBrowserRouter([
     </rule>
   </design_system>
 
+  <accessibility>
+    <section_title>ARIA Labels: Required on All Interactive Elements</section_title>
+    <description>Every interactive element and landmark region MUST have ARIA attributes. This is a hard requirement — not optional accessibility polish. Browser automation tools (Chrome DevTools Protocol, Playwright) use ARIA labels to identify and target UI elements. Without ARIA, automated testing and AI-driven browser interaction cannot reliably find elements.</description>
+
+    <rule>
+      <rule_title>**Interactive Elements**</rule_title>
+      <rule_content>
+        Buttons, links, inputs, selects, and other interactive elements need `aria-label` when the visible text is insufficient or absent:
+        <code_block>
+// CORRECT: ARIA label on icon button
+&lt;Button aria-label="Delete project" onClick={handleDelete}&gt;
+  &lt;TrashIcon /&gt;
+&lt;/Button&gt;
+
+// CORRECT: Input with label association
+&lt;label id="email-label"&gt;Email&lt;/label&gt;
+&lt;Input aria-labelledby="email-label" type="email" /&gt;
+
+// CORRECT: Descriptive link
+&lt;a href="/docs" aria-label="View project documentation"&gt;Docs&lt;/a&gt;
+
+// WRONG: No ARIA on icon-only button
+&lt;Button onClick={handleDelete}&gt;&lt;TrashIcon /&gt;&lt;/Button&gt;
+        </code_block>
+      </rule_content>
+    </rule>
+
+    <rule>
+      <rule_title>**Landmark Regions**</rule_title>
+      <rule_content>
+        Use `role` attributes on structural containers so automation tools can navigate page sections:
+        <code_block>
+&lt;nav role="navigation" aria-label="Main navigation"&gt;
+&lt;main role="main"&gt;
+&lt;aside role="complementary" aria-label="Filters"&gt;
+&lt;footer role="contentinfo"&gt;
+        </code_block>
+      </rule_content>
+    </rule>
+
+    <rule>
+      <rule_title>**Dynamic Content**</rule_title>
+      <rule_content>
+        Status messages, loading states, and live-updating regions need `aria-live`:
+        <code_block>
+&lt;div role="status" aria-live="polite"&gt;{statusMessage}&lt;/div&gt;
+&lt;div role="alert" aria-live="assertive"&gt;{errorMessage}&lt;/div&gt;
+        </code_block>
+      </rule_content>
+    </rule>
+
+    <rule>
+      <rule_title>**Why This Matters**</rule_title>
+      <rule_content>
+        ARIA labels serve dual purpose: (1) screen reader accessibility for users, and (2) reliable element targeting for browser automation. Chrome DevTools Protocol and Playwright build accessibility trees from ARIA attributes to identify elements — without them, automation falls back to fragile CSS selectors or screenshot-based heuristics. If we control the frontend build, we enforce ARIA from day one.
+      </rule_content>
+    </rule>
+  </accessibility>
+
   <ai_assistant>
     <section_title>AI Implementation Assistant</section_title>
     <content>
