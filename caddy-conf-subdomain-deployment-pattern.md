@@ -6,7 +6,9 @@ description: "Caddy conf.d pattern for subdomain-based service deployment with w
 
 ## Status
 
-**Accepted** | Date: 2025-07-24
+**Deprecated** | Date: 2025-07-24 | Deprecated: 2026-03-10
+
+> **⚠️ This ADR is deprecated.** Content has been absorbed into the [Developer Operations Manual — Step 7: Deploy to Staging](https://mariuswilsch.github.io/public-wilsch-ai-pages/global/developer-operations-manual-wilsch-ai-services). Full pattern details in the [Caddy Subdomain Routing Design Doc](https://mariuswilsch.github.io/public-wilsch-ai-pages/project/WILSCH-AI-INTERNAL/caddy-subdomain-routing-design).
 
 ## Context
 

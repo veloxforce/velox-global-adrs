@@ -6,7 +6,9 @@ description: "Standardized Docker Compose Makefile targets with production-first
 
 ## Status
 
-**Accepted** | Date: 2025-09-02
+**Deprecated** | Date: 2025-09-02 | Deprecated: 2026-03-10
+
+> **⚠️ This ADR is deprecated.** Content has been absorbed into the [Developer Operations Manual — Step 7: Deploy to Staging](https://mariuswilsch.github.io/public-wilsch-ai-pages/global/developer-operations-manual-wilsch-ai-services). Full pattern details in the [Docker Compose Backend Design Doc](https://mariuswilsch.github.io/public-wilsch-ai-pages/project/WILSCH-AI-INTERNAL/docker-compose-backend-deployment-design).
 
 ## Context
 

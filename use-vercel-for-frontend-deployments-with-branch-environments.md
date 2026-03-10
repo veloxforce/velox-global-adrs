@@ -1,7 +1,9 @@
 # 011: Use Vercel for Frontend Deployments with Branch Environments
 
 ## Status
-**Accepted** | Date: 2025-09-02
+**Partially Deprecated** | Date: 2025-09-02 | Deprecated: 2026-03-10
+
+> **⚠️ Deployment content in this ADR is deprecated.** Deploy patterns absorbed into the [Developer Operations Manual — Step 7](https://mariuswilsch.github.io/public-wilsch-ai-pages/global/developer-operations-manual-wilsch-ai-services) and [Vercel Hobby Multi-Dev Design Doc](https://mariuswilsch.github.io/public-wilsch-ai-pages/project/WILSCH-AI-INTERNAL/vercel-hobby-multi-dev-deploy). The `/api` routing section remains active.
 
 ## Context
 - Frontend applications require deployment pipeline with minimal configuration overhead
